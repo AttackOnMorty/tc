@@ -1,11 +1,22 @@
+const Type = require('./Type');
+
 class EvaTC {
   tc(exp) {
+    // --------------------------------------------
+    // Self-evaluating:
+
+    /**
+     * Numbers: 10
+     */
     if (this._isNumber(exp)) {
-      return 'number';
+      return Type.number;
     }
 
+    /**
+     * Strings: "hello"
+     */
     if (this._isString(exp)) {
-      return 'string';
+      return Type.string;
     }
 
     throw `Unknown type for expression ${exp}.`;
@@ -16,9 +27,7 @@ class EvaTC {
   }
 
   _isString(exp) {
-    return (
-      typeof exp === 'string' && exp[0] === '"' && exp[exp.length - 1] === '"'
-    );
+    return typeof exp === 'string' && exp[0] === '"' && exp.slice(-1) === '"';
   }
 }
 
