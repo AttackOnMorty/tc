@@ -6,6 +6,23 @@ class EvaTC {
     this.global = this._createGlobal();
   }
 
+  _createGlobal() {
+    return new TypeEnvironment({
+      VERSION: Type.string,
+    });
+  }
+
+  tcGlobal(exp) {
+    return this._tcBody(exp, this.global);
+  }
+
+  _tcBody(body, env) {
+    if (body[0] === 'begin') {
+      return this._tcBlock(body, env);
+    }
+    return this.tc(body, env);
+  }
+
   tc(exp, env = this.global) {
     // --------------------------------------------
     // Self-evaluating:
@@ -81,12 +98,6 @@ class EvaTC {
     throw `Unknown type for expression ${exp}.`;
   }
 
-  _createGlobal() {
-    return new TypeEnvironment({
-      VERSION: Type.string,
-    });
-  }
-
   _isNumber(exp) {
     return typeof exp === 'number';
   }
@@ -142,17 +153,6 @@ class EvaTC {
     }
   }
 
-  _expect(actualType, expectedType, value, exp) {
-    if (!actualType.equals(expectedType)) {
-      this._throw(actualType, expectedType, value, exp);
-    }
-    return actualType;
-  }
-
-  _throw(actualType, expectedType, value, exp) {
-    throw `\nExpected ${expectedType} for ${value} in ${exp}, but got ${actualType} type.\n`;
-  }
-
   _isVariableName(exp) {
     return typeof exp === 'string' && /^[+\-*/<>=a-zA-Z0-9_:]+$/.test(exp);
   }
@@ -167,6 +167,17 @@ class EvaTC {
     });
 
     return result;
+  }
+
+  _expect(actualType, expectedType, value, exp) {
+    if (!actualType.equals(expectedType)) {
+      this._throw(actualType, expectedType, value, exp);
+    }
+    return actualType;
+  }
+
+  _throw(actualType, expectedType, value, exp) {
+    throw `\nExpected ${expectedType} for ${value} in ${exp}, but got ${actualType} type.\n`;
   }
 }
 

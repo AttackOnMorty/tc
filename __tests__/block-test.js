@@ -53,4 +53,26 @@ module.exports = (eva) => {
 
     Type.number
   );
+
+  test(
+    eva,
+    `
+    (begin
+      (var x 10)
+      (var y 20)
+      (+ (* x 10) y))
+  `,
+    Type.number
+  );
+
+  exec(eva, `(var x 10)`);
+
+  test(
+    eva,
+    `
+    (var y 20)
+    (+ (* x 10) y)
+  `,
+    Type.number
+  );
 };
