@@ -3,6 +3,13 @@ class Type {
     this.name = name;
   }
 
+  static fromString(typeStr) {
+    if (this.hasOwnProperty(typeStr)) {
+      return this[typeStr];
+    }
+    throw `Unknown type: ${typeStr}`;
+  }
+
   getName() {
     return this.name;
   }
