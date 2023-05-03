@@ -1,6 +1,6 @@
 const EvaTC = require('../src/EvaTC');
 
-const tests = [require('./self-eval-test.js')];
+const tests = [require('./self-eval-test.js'), require('./math-test.js')];
 
 const eva = new EvaTC();
 
