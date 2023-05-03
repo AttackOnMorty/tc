@@ -58,6 +58,26 @@ class EvaTC {
       return env.lookup(exp);
     }
 
+    // --------------------------------------------
+    // Block: sequence of expressions
+
+    if (exp[0] === 'begin') {
+      const blockEnv = new TypeEnvironment({}, env);
+      return this._tcBlock(exp, blockEnv);
+    }
+
+    // --------------------------------------------
+    // Variable update: (set x 10)
+
+    if (exp[0] === 'set') {
+      const [_tag, ref, value] = exp;
+
+      const valueType = this.tc(value, env);
+      const varType = this.tc(ref, env);
+
+      return this._expect(valueType, varType, value, ref);
+    }
+
     throw `Unknown type for expression ${exp}.`;
   }
 
@@ -135,6 +155,18 @@ class EvaTC {
 
   _isVariableName(exp) {
     return typeof exp === 'string' && /^[+\-*/<>=a-zA-Z0-9_:]+$/.test(exp);
+  }
+
+  _tcBlock(block, env) {
+    let result;
+
+    const [_tag, ...expressions] = block;
+
+    expressions.forEach((exp) => {
+      result = this.tc(exp, env);
+    });
+
+    return result;
   }
 }
 
