@@ -9,6 +9,7 @@ const tests = [
   require('./while-test'),
   require('./user-defined-function-test'),
   require('./built-in-function-test'),
+  require('./lambda-function-test'),
 ];
 
 const eva = new EvaTC();

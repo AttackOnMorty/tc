@@ -137,7 +137,11 @@ class EvaTC {
     // Syntactic sugar for: (var square (lambda ((x number)) -> number (* x x)))
 
     if (exp[0] === 'def') {
-      const [_tag, name, params, _retDel, returnTypeStr, body] = exp;
+      const varExp = this._transformDefToVarLambda(exp);
+
+      const name = exp[1];
+      const params = exp[2];
+      const returnTypeStr = exp[4];
 
       const paramTypes = params.map(([name, typeStr]) =>
         Type.fromString(typeStr)
@@ -150,6 +154,15 @@ class EvaTC {
           returnType: Type.fromString(returnTypeStr),
         })
       );
+
+      return this.tc(varExp, env);
+    }
+
+    // --------------------------------------------
+    // Lambda function: (lambda ((x number)) -> number (* x x))
+
+    if (exp[0] === 'lambda') {
+      const [_tag, params, _retDel, returnTypeStr, body] = exp;
 
       return this._tcFunction(params, returnTypeStr, body, env);
     }
@@ -252,6 +265,11 @@ class EvaTC {
 
   _isVariableName(exp) {
     return typeof exp === 'string' && /^[+\-*/<>=a-zA-Z0-9_:]+$/.test(exp);
+  }
+
+  _transformDefToVarLambda(exp) {
+    const [_tag, name, params, _retDel, returnTypeStr, body] = exp;
+    return ['var', name, ['lambda', params, _retDel, returnTypeStr, body]];
   }
 
   _tcFunction(params, returnTypeStr, body, env) {
