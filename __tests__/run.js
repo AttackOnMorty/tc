@@ -11,6 +11,7 @@ const tests = [
   require('./built-in-function-test'),
   require('./lambda-function-test'),
   require('./alias-test'),
+  require('./class-test'),
 ];
 
 const eva = new EvaTC();

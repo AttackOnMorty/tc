@@ -67,6 +67,65 @@ class EvaTC {
     }
 
     // --------------------------------------------
+    // Class declaration: (class <Name> <Super> <Body>)
+
+    if (exp[0] === 'class') {
+      const [_tag, name, superClassName, body] = exp;
+      const superClass = Type[superClassName];
+      const classType = new Type.Class({ name, superClass });
+
+      Type[name] = env.define(name, classType);
+      this._tcBody(body, classType.env);
+
+      return classType;
+    }
+
+    // --------------------------------------------
+    // Class instantiation: (new <Class> <Arguments>...)
+
+    if (exp[0] === 'new') {
+      const [_tag, className, ...argValues] = exp;
+      const classType = Type[className];
+
+      if (classType === null) {
+        throw `Unknown class ${className}.`;
+      }
+
+      const argTypes = argValues.map((arg) => this.tc(arg, env));
+
+      return this._checkFunctionCall(
+        classType.getField('constructor'),
+        [classType, ...argTypes],
+        env,
+        exp
+      );
+    }
+
+    // --------------------------------------------
+    // Property access: (prop <instance> <name>)
+
+    if (exp[0] === 'prop') {
+      const [_tag, instance, name] = exp;
+      const instanceType = this.tc(instance, env);
+
+      return instanceType.getField(name);
+    }
+
+    // --------------------------------------------
+    // Super expressions: (super <ClassName>)
+
+    if (exp[0] === 'super') {
+      const [_tag, className] = exp;
+      const classType = Type[className];
+
+      if (classType === null) {
+        throw `Unknown class ${className}.`;
+      }
+
+      return classType.superClass;
+    }
+
+    // --------------------------------------------
     // Variable declaration: (var x 10)
     //
     // With type check: (var (x number) "foo") // error
