@@ -24,6 +24,9 @@ class Type {
   }
 
   equals(other) {
+    if (other instanceof Type.Alias) {
+      return other.equals(this);
+    }
     return this.name === other.name;
   }
 }
@@ -109,6 +112,20 @@ Type.Function = class extends Type {
     }
 
     return true;
+  }
+};
+
+Type.Alias = class extends Type {
+  constructor({ name, parent }) {
+    super(name);
+    this.parent = parent;
+  }
+
+  equals(other) {
+    if (this.name === other.name) {
+      return true;
+    }
+    return this.parent.equals(other);
   }
 };
 
