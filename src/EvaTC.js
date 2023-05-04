@@ -55,7 +55,11 @@ class EvaTC {
     if (exp[0] === 'type') {
       const [_tag, name, base] = exp;
 
-      if (Type.hasOwnProperty(name)) {
+      if (base[0] === 'or') {
+        const options = base.slice(1);
+        const optionTypes = options.map((option) => Type.fromString(option));
+        return (Type[name] = new Type.Union({ name, optionTypes }));
+      } else if (Type.hasOwnProperty(name)) {
         throw `Type ${name} is already defined: ${Type[name]}.`;
       }
 
