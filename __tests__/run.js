@@ -7,6 +7,8 @@ const tests = [
   require('./block-test'),
   require('./if-test'),
   require('./while-test'),
+  require('./user-defined-function-test'),
+  require('./built-in-function-test'),
 ];
 
 const eva = new EvaTC();

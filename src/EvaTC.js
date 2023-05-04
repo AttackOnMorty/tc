@@ -131,12 +131,42 @@ class EvaTC {
       return this.tc(body, env);
     }
 
+    // --------------------------------------------
+    // Function declaration: (def square ((x number)) -> number (* x x))
+    //
+    // Syntactic sugar for: (var square (lambda ((x number)) -> number (* x x)))
+
+    if (exp[0] === 'def') {
+      const [_tag, name, params, _retDel, returnTypeStr, body] = exp;
+
+      return env.define(
+        name,
+        this._tcFunction(params, returnTypeStr, body, env)
+      );
+    }
+
+    // --------------------------------------------
+    // Function calls.
+    //
+    // (square 2)
+
+    if (Array.isArray(exp)) {
+      const fn = this.tc(exp[0], env);
+      const argValues = exp.slice(1);
+      const argTypes = argValues.map((arg) => this.tc(arg, env));
+
+      return this._checkFunctionCall(fn, argTypes, env, exp);
+    }
+
     throw `Unknown type for expression ${exp}.`;
   }
 
   _createGlobal() {
     return new TypeEnvironment({
       VERSION: Type.string,
+
+      sum: Type.fromString('Fn<number<number,number>>'),
+      square: Type.fromString('Fn<number<number>>'),
     });
   }
 
@@ -213,6 +243,46 @@ class EvaTC {
 
   _isVariableName(exp) {
     return typeof exp === 'string' && /^[+\-*/<>=a-zA-Z0-9_:]+$/.test(exp);
+  }
+
+  _tcFunction(params, returnTypeStr, body, env) {
+    const returnType = Type.fromString(returnTypeStr);
+
+    const paramsRecord = {};
+    const paramTypes = [];
+
+    params.forEach(([name, typeStr]) => {
+      const paramType = Type.fromString(typeStr);
+      paramsRecord[name] = paramType;
+      paramTypes.push(paramType);
+    });
+
+    const fnEnv = new TypeEnvironment(paramsRecord, env);
+
+    const actualReturnType = this._tcBody(body, fnEnv);
+
+    if (!actualReturnType.equals(returnType)) {
+      throw `Expected function ${body} to return ${returnType}, but got ${actualReturnType}.`;
+    }
+
+    return new Type.Function({
+      paramTypes,
+      returnType,
+    });
+  }
+
+  _checkFunctionCall(fn, argTypes, env, exp) {
+    if (fn.paramTypes.length !== argTypes.length) {
+      throw `\nFunction ${exp} ${fn.getName()} expects ${
+        fn.paramTypes.length
+      } arguments, ${argTypes.length} given in ${exp}.\n`;
+    }
+
+    argTypes.forEach((argType, index) => {
+      this._expect(argType, fn.paramTypes[index], argTypes[index], exp);
+    });
+
+    return fn.returnType;
   }
 
   _checkArity(exp, arity) {
